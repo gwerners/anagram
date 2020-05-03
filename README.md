@@ -29,6 +29,7 @@ _______________________________________________________________________________
 Some benchmarks:
 
 running simd version.
+
 anagram_SIMD pt-Br_dictionary.txt gabrielfarinas
 
 real	0m0,065s
@@ -44,6 +45,7 @@ sys	0m0,200s
 total anagrams generated: 64984 ./build/gabrielwernersbachfarinas.txt
 _______________________________________________________________________________
 running cpp version.
+
 anagram pt-Br_dictionary.txt gabrielfarinas
 
 real	0m0,132s
@@ -63,6 +65,7 @@ _______________________________________________________________________________
 And of course, the famous anagram in Harry Potter (dictionary contains only the wanted words...):
 
 running cpp version.
+
 anagram minimal.txt tommarvoloriddle
 
 real	0m0,001s
