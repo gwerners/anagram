@@ -33,17 +33,17 @@ running simd version.
 
 **anagram_SIMD pt-Br_dictionary.txt gabrielfarinas**
 
-real	0m0,065s
-user	0m0,065s
+real	0m0,008s
+user	0m0,008s
 sys	0m0,000s
 
 total anagrams generated: **904** ./build/gabrielfarinas.txt
 _______________________________________________________________________________
 **anagram_SIMD pt-Br_dictionary.txt gabrielwernersbachfarinas**
 
-real	1m31,865s
-user	1m31,501s
-sys	0m0,200s
+real	0m11,328s
+user	0m11,255s
+sys	0m0,072s
 
 total anagrams generated: **64984** ./build/gabrielwernersbachfarinas.txt
 _______________________________________________________________________________
@@ -51,17 +51,18 @@ running cpp version.
 
 **anagram pt-Br_dictionary.txt gabrielfarinas**
 
-real	0m0,132s
-user	0m0,132s
+real	0m0,016s
+user	0m0,016s
 sys	0m0,000s
 
 total anagrams generated: **904** ./build/gabrielfarinas.txt
 _______________________________________________________________________________
 **anagram pt-Br_dictionary.txt gabrielwernersbachfarinas**
 
-real	3m29,811s
-user	3m29,199s
-sys	0m0,360s
+real	0m33,144s
+user	0m33,062s
+sys	0m0,080s
+
 
 total anagrams generated: **64984** ./build/gabrielwernersbachfarinas.txt
 _______________________________________________________________________________
@@ -87,8 +88,9 @@ I also did a benchmark using the dictionary us_dictionary.txt with 142.810 words
 
 **anagram_SIMD us_dictionary.txt gabrielfarinas**
 
-real	18m15,197s
-user	18m8,603s
-sys	0m6,516s
+real	0m24,007s
+user	0m20,869s
+sys	0m3,136s
+total anagrams generated: 2675981 ./build/big.txt
 
 total anagrams generated: **2675981** ./gabrielfarinas.txt

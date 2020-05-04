@@ -94,6 +94,14 @@ count=$(wc -l ./build/gabrielwernersbachfarinas.txt)
 echo "total anagrams generated: ${count}"
 echo "_______________________________________________________________________________"
 
+
+#last test
+echo "anagram_SIMD us_dictionary.txt gabrielfarinas"
+time ./build/anagram_SIMD ./dict/us_dictionary.txt gabrielfarinas > ./build/big.txt
+count=$(wc -l ./build/big.txt)
+echo "total anagrams generated: ${count}"
+echo "_______________________________________________________________________________"
+
 ################################################################################
 #use non simd version:
 unset ENABLE_SIMD
@@ -129,3 +137,7 @@ time ./build/anagram ${DICTIONARY} tommarvoloriddle > ./build/voldemort.txt
 
 echo "famous anagram(words are sorted):"
 cat ./build/voldemort.txt
+
+
+
+

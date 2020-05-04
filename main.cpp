@@ -22,7 +22,7 @@
 #include <bitset>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <list>
 #include <string>
 #include <utility> // std::pair
 #include <vector>
@@ -41,6 +41,7 @@
 
 std::vector<std::string> palavras;
 #ifdef USE_SIMD
+std::list<std::string> listaPalavras;
 __m256i* bitmap = nullptr;
 #else
 std::vector<unsigned int> bitmap;
@@ -79,42 +80,43 @@ enum CharBits
 void
 print_chars(const char* name, __m256i ma)
 {
-    printf(
-      "m_ %x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x - "
-      "%s\n",
-      _mm256_extract_epi8(ma, 31),
-      _mm256_extract_epi8(ma, 30),
-      _mm256_extract_epi8(ma, 29),
-      _mm256_extract_epi8(ma, 28),
-      _mm256_extract_epi8(ma, 27),
-      _mm256_extract_epi8(ma, 26),
-      _mm256_extract_epi8(ma, 25),
-      _mm256_extract_epi8(ma, 24),
-      _mm256_extract_epi8(ma, 23),
-      _mm256_extract_epi8(ma, 22),
-      _mm256_extract_epi8(ma, 21),
-      _mm256_extract_epi8(ma, 20),
-      _mm256_extract_epi8(ma, 19),
-      _mm256_extract_epi8(ma, 18),
-      _mm256_extract_epi8(ma, 17),
-      _mm256_extract_epi8(ma, 16),
-      _mm256_extract_epi8(ma, 15),
-      _mm256_extract_epi8(ma, 14),
-      _mm256_extract_epi8(ma, 13),
-      _mm256_extract_epi8(ma, 12),
-      _mm256_extract_epi8(ma, 11),
-      _mm256_extract_epi8(ma, 10),
-      _mm256_extract_epi8(ma, 9),
-      _mm256_extract_epi8(ma, 8),
-      _mm256_extract_epi8(ma, 7),
-      _mm256_extract_epi8(ma, 6),
-      _mm256_extract_epi8(ma, 5),
-      _mm256_extract_epi8(ma, 4),
-      _mm256_extract_epi8(ma, 3),
-      _mm256_extract_epi8(ma, 2),
-      _mm256_extract_epi8(ma, 1),
-      _mm256_extract_epi8(ma, 0),
-      name);
+    printf("m_ "
+           "%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%."
+           "2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x - "
+           "%s\n",
+           _mm256_extract_epi8(ma, 31),
+           _mm256_extract_epi8(ma, 30),
+           _mm256_extract_epi8(ma, 29),
+           _mm256_extract_epi8(ma, 28),
+           _mm256_extract_epi8(ma, 27),
+           _mm256_extract_epi8(ma, 26),
+           _mm256_extract_epi8(ma, 25),
+           _mm256_extract_epi8(ma, 24),
+           _mm256_extract_epi8(ma, 23),
+           _mm256_extract_epi8(ma, 22),
+           _mm256_extract_epi8(ma, 21),
+           _mm256_extract_epi8(ma, 20),
+           _mm256_extract_epi8(ma, 19),
+           _mm256_extract_epi8(ma, 18),
+           _mm256_extract_epi8(ma, 17),
+           _mm256_extract_epi8(ma, 16),
+           _mm256_extract_epi8(ma, 15),
+           _mm256_extract_epi8(ma, 14),
+           _mm256_extract_epi8(ma, 13),
+           _mm256_extract_epi8(ma, 12),
+           _mm256_extract_epi8(ma, 11),
+           _mm256_extract_epi8(ma, 10),
+           _mm256_extract_epi8(ma, 9),
+           _mm256_extract_epi8(ma, 8),
+           _mm256_extract_epi8(ma, 7),
+           _mm256_extract_epi8(ma, 6),
+           _mm256_extract_epi8(ma, 5),
+           _mm256_extract_epi8(ma, 4),
+           _mm256_extract_epi8(ma, 3),
+           _mm256_extract_epi8(ma, 2),
+           _mm256_extract_epi8(ma, 1),
+           _mm256_extract_epi8(ma, 0),
+           name);
 }
 
 // sum all letters on word in each respective bytes
@@ -1070,8 +1072,8 @@ break_chars_simd(const std::string& name)
                 bits = _mm256_add_epi8(bits, mz);
                 break;
             default:
-                std::cout << "invalid letter at word[" << name
-                          << "]" << std::endl;
+                std::cout << "invalid letter at word[" << name << "]"
+                          << std::endl;
                 exit(1);
         }
         ++ptr;
@@ -1196,8 +1198,8 @@ break_chars(const std::string& name,
                 ++z;
                 break;
             default:
-                std::cout << "invalid letter at word[" << name
-                          << "]" << std::endl;
+                std::cout << "invalid letter at word[" << name << "]"
+                          << std::endl;
                 exit(1);
         }
         ++ptr;
@@ -1235,22 +1237,31 @@ break_chars(const std::string& name,
 #endif
     return bits;
 }
-void
-insertBits(const char* word)
+bool
+insertBits(const char* word, int targetBits)
 {
     unsigned int bits = 0x0;
-    int a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x,
-      y, z;
-    a = b = c = d = e = f = g = h = i = j = k = l = m = n = o = p = q = r = s =
-      t = u = v = x = w = y = z = 0;
+    int ABCDEFG;
+    ZERO_ABCDFG;
     bits = break_chars(word, ABCDEFG);
-    // add bit set on map
-    bitmap.push_back(bits);
+
+    // check if it's a word impossible to match
+    if (bits & (~targetBits)) {
+#ifdef SHOW_DEBUG
+        std::cout << "cannot use word [" << word
+                  << "] - removing from dictionary" << std::endl;
+#endif
+        return false;
+    } else {
+        // add bit set on map
+        bitmap.push_back(bits);
+        return true;
+    }
 }
 #endif
 
 void
-generateDictionaryBits(const char* filename)
+generateDictionaryBits(const char* filename, const char* targetString)
 {
     std::ifstream in(filename);
     if (!in) // Always test the file open.
@@ -1259,27 +1270,66 @@ generateDictionaryBits(const char* filename)
         return;
     }
     std::string line;
+
+#ifndef USE_SIMD
+    int ABCDEFG;
+    int targetBits;
+    targetBits = break_chars(targetString, ABCDEFG);
+    bool canInsert;
+#endif
     while (std::getline(in, line)) {
 #ifdef IGNORE_WORDS_WITH_LESS_LETTERS
         if (line.size() <= 2)
             continue;
 #endif
-        palavras.push_back(line);
 #ifndef USE_SIMD
-        insertBits(line.c_str());
+        canInsert = insertBits(line.c_str(), targetBits);
+        if (canInsert) {
+            palavras.push_back(line);
+        }
+#else
+        // add word in list to process later
+        listaPalavras.push_back(line);
 #endif
     }
 #ifdef USE_SIMD
     // store big array with bitmap!
     bitmap = reinterpret_cast<__m256i*>(
-      _mm_malloc(palavras.size() * sizeof(__m256i), 64));
+      _mm_malloc(listaPalavras.size() * sizeof(__m256i), 64));
     __m256i* current = bitmap;
-    for (auto entry : palavras) {
-        *current = break_chars_simd(entry);
-        ++current;
+    __m256i bits;
+    __m256i tmpBits = break_chars_simd(targetString);
+    __m256i fullBits = _mm256_set1_epi32(0xffffffff);
+    __m256i targetBits =
+      _mm256_cmpgt_epi8(fullBits, _mm256_andnot_si256(tmpBits, fullBits));
+    for (auto entry : listaPalavras) {
+
+        bits = break_chars_simd(entry);
+        __m256i mor = _mm256_or_si256(bits, targetBits);
+        __m256i mand = _mm256_andnot_si256(targetBits, mor);
+        __m256i mgt = _mm256_cmpgt_epi8(mor, targetBits);
+#ifdef SHOW_DEBUG
+        print_chars("targetBits ", targetBits);
+        print_chars("bits ", bits);
+        print_chars("mor ", mor);
+        print_chars("mand ", mand);
+        print_chars("mgt ", mgt);
+        std::cout << entry << " " << _mm256_movemask_epi8(mgt) << std::endl;
+#endif
+        if (_mm256_movemask_epi8(mgt) > 0) {
+#ifdef SHOW_DEBUG
+            std::cout << "cannot use word [" << entry
+                      << "] - removing from dictionary" << std::endl;
+#endif
+            continue;
+        } else {
+            palavras.push_back(entry);
+            *current = bits;
+            ++current;
+        }
     }
 #ifdef SHOW_DEBUG
-    for (auto entry : palavras) {
+    for (auto entry : listaPalavras) {
         print_chars(entry.c_str(), break_chars_simd(entry));
     }
 #endif
@@ -1631,7 +1681,7 @@ int
 main(int argc, const char** argv)
 {
     if (argc > 1) {
-        generateDictionaryBits(argv[1]);
+        generateDictionaryBits(argv[1], argv[2]);
 #ifdef USE_SIMD
         generateAnagramSimd(argv[2]);
         if (bitmap) {
