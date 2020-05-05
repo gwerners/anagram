@@ -1309,13 +1309,11 @@ generateDictionaryBits(const char* filename, const char* targetString)
 
         bits = break_chars_simd(entry);
         __m256i mor = _mm256_or_si256(bits, targetBits);
-        __m256i mand = _mm256_andnot_si256(targetBits, mor);
         __m256i mgt = _mm256_cmpgt_epi8(mor, targetBits);
 #ifdef SHOW_DEBUG
         print_chars("targetBits ", targetBits);
         print_chars("bits ", bits);
         print_chars("mor ", mor);
-        print_chars("mand ", mand);
         print_chars("mgt ", mgt);
         std::cout << entry << " " << _mm256_movemask_epi8(mgt) << std::endl;
 #endif
@@ -1389,11 +1387,12 @@ consume_chars_simd(unsigned int index,
     __m256i meq = _mm256_cmpeq_epi8(bits, zero);
     if (_mm256_movemask_epi8(meq) == -1) {
         // found anagram!
-        std::cout << output << std::endl;
+        std::cout << output  << std::endl;
         return;
     }
     // seek more words
     unsigned int total = palavras.size();
+    
     for (unsigned int subindex = index; subindex < total; subindex++) {
         __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[subindex]);
         __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[subindex]);
@@ -1646,6 +1645,7 @@ generateAnagramSimd(const char* name)
 
         if (_mm256_movemask_epi8(mor) == -1) {
             auto lastSize = output.size();
+            output=palavras[index];output.push_back(' ');
             consume_chars_simd(index, output, bits, bitmap[index]);
             output.resize(lastSize);
         }
@@ -1680,6 +1680,7 @@ generateAnagram(const char* name)
             int _ABCDEFG;
             auto lastSize = output.size();
             break_chars(palavras[index], _ABCDEFG);
+            output=palavras[index];output.push_back(' ');
             consume_chars(index, output, ABCDEFG, _ABCDEFG);
             output.resize(lastSize);
         }
