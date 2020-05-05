@@ -82,19 +82,29 @@ DICTIONARY=./dict/pt-Br_dictionary.txt
 
 #run!
 echo "running simd version."
-echo "anagram_SIMD pt-Br_dictionary.txt gabrielfarinas"
-time ./build/anagram_SIMD ${DICTIONARY} gabrielfarinas > ./build/gabrielfarinas.txt
-count=$(wc -l ./build/gabrielfarinas.txt)
+echo "anagram_SIMD ${DICTIONARY} gabrielfarinas"
+time ./build/anagram_SIMD ${DICTIONARY} gabrielfarinas > ./build/gabrielfarinas_simd.txt
+count=$(wc -l ./build/gabrielfarinas_simd.txt)
 echo "total anagrams generated: ${count}"
 echo "_______________________________________________________________________________"
 
-echo "anagram_SIMD pt-Br_dictionary.txt gabrielwernersbachfarinas"
+echo "anagram_SIMD ${DICTIONARY} gabrielwernersbachfarinas"
 time ./build/anagram_SIMD ${DICTIONARY} gabrielwernersbachfarinas > ./build/gabrielwernersbachfarinas.txt
 count=$(wc -l ./build/gabrielwernersbachfarinas.txt)
 echo "total anagrams generated: ${count}"
 echo "_______________________________________________________________________________"
 
+unset IGNORE_LESS
+BuildProgram $BUILD_TYPE
+echo "anagram_SIMD minimal.txt tommarvoloriddle"
+time ./build/anagram_SIMD ./dict/minimal.txt tommarvoloriddle > ./build/voldemort.txt
 
+echo "famous anagram(words are sorted):"
+cat ./build/voldemort.txt
+echo "_______________________________________________________________________________"
+
+export IGNORE_LESS=1
+BuildProgram $BUILD_TYPE
 #last test
 echo "anagram_SIMD us_dictionary.txt gabrielfarinas"
 time ./build/anagram_SIMD ./dict/us_dictionary.txt gabrielfarinas > ./build/big.txt
@@ -112,13 +122,13 @@ BuildProgram $BUILD_TYPE
 
 #run!
 echo "running cpp version."
-echo "anagram pt-Br_dictionary.txt gabrielfarinas"
+echo "anagram ${DICTIONARY} gabrielfarinas"
 time ./build/anagram ${DICTIONARY} gabrielfarinas > ./build/gabrielfarinas.txt
 count=$(wc -l ./build/gabrielfarinas.txt)
 echo "total anagrams generated: ${count}"
 echo "_______________________________________________________________________________"
 
-echo "anagram pt-Br_dictionary.txt gabrielwernersbachfarinas"
+echo "anagram ${DICTIONARY} gabrielwernersbachfarinas"
 time ./build/anagram ${DICTIONARY} gabrielwernersbachfarinas > ./build/gabrielwernersbachfarinas.txt
 count=$(wc -l ./build/gabrielwernersbachfarinas.txt)
 echo "total anagrams generated: ${count}"
@@ -145,5 +155,6 @@ echo "famous anagram(words are sorted):"
 cat ./build/voldemort.txt
 
 
+#meld ./build/gabrielfarinas.txt ./build/gabrielfarinas_simd.txt
 
 
