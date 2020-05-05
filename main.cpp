@@ -39,6 +39,9 @@
 //#define SHOW_DEBUG
 //#define IGNORE_WORDS_WITH_LESS_LETTERS
 
+// guess about max anagrams per line
+const int MAX_ANAGRAMS = 20;
+
 std::vector<std::string> palavras;
 #ifdef USE_SIMD
 std::list<std::string> listaPalavras;
@@ -1338,7 +1341,8 @@ generateDictionaryBits(const char* filename, const char* targetString)
 #ifdef USE_SIMD
 void
 consume_chars_simd(unsigned int index,
-                   const std::string& output,
+                   int* root,
+                   int* output,
                    __m256i original,
                    __m256i consume)
 {
@@ -1386,40 +1390,46 @@ consume_chars_simd(unsigned int index,
     __m256i meq = _mm256_cmpeq_epi8(bits, zero);
     if (_mm256_movemask_epi8(meq) == -1) {
         // found anagram!
-        std::cout << output << std::endl;
+        int* end = ++output;
+        while (root != end) {
+            std::cout << palavras[*root] << " ";
+            ++root;
+        }
+        std::cout << std::endl;
         return;
     }
     // seek more words
     unsigned int total = palavras.size();
-    for (unsigned int i = index; i < total; i++) {
-        __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[i]);
-        __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[i]);
+    int* loutput;
+    for (unsigned int subindex = index; subindex < total; subindex++) {
+        __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[subindex]);
+        __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[subindex]);
         __m256i mor = _mm256_or_si256(meq, mgt);
 #ifdef SHOW_DEBUG
         print_chars("meq ", meq);
         print_chars("mgt ", mgt);
         print_chars("mor ", mor);
-        std::cout << palavras[i] << " " << _mm256_movemask_epi8(mor)
+        std::cout << palavras[subindex] << " " << _mm256_movemask_epi8(mor)
                   << std::endl;
 #endif
+        loutput = output;
         if (_mm256_movemask_epi8(mor) == -1) {
-            std::string loutput = output;
-            loutput += palavras[i] + " ";
-            consume_chars_simd(i, loutput, bits, bitmap[i]);
+            *(++loutput) = subindex;
+            consume_chars_simd(subindex, root, loutput, bits, bitmap[subindex]);
         }
     }
 }
 #else
 void
 consume_chars(unsigned int index,
-              const std::string& output,
+              int* root,
+              int* output,
               ABCDEFG_DEC,
               _ABCDEFG_DEC)
 {
     unsigned int bits = 0x0;
 #ifdef SHOW_DEBUG
     std::cout << "consuming [" << palavras[index] << "]" << std::endl;
-    std::cout << "          [" << output << "]" << std::endl;
 #endif
     // consumes chars
     if (a >= _a) {
@@ -1558,7 +1568,12 @@ consume_chars(unsigned int index,
         o == 0 && p == 0 && q == 0 && r == 0 && s == 0 && t == 0 && u == 0 &&
         v == 0 && w == 0 && x == 0 && y == 0 && z == 0) {
         // found anagram!
-        std::cout << output << std::endl;
+        int* end = ++output;
+        while (root != end) {
+            std::cout << palavras[*root] << " ";
+            ++root;
+        }
+        std::cout << std::endl;
         return;
     }
     // creates new mask to compare
@@ -1595,7 +1610,9 @@ consume_chars(unsigned int index,
 #endif
     // compares again
     unsigned int total = palavras.size();
+    int* loutput;
     for (unsigned int subindex = index; subindex < total; subindex++) {
+        loutput = output;
         if ((bitmap[subindex] & bits) == bitmap[subindex]) {
 #ifdef SHOW_DEBUG
             std::cout << "2 match " << palavras[subindex] << std::endl;
@@ -1609,9 +1626,8 @@ consume_chars(unsigned int index,
             int _ABCDEFG;
             // remove bits and call again
             break_chars(palavras[subindex], _ABCDEFG);
-            std::string loutput = output;
-            loutput += palavras[subindex] + " ";
-            consume_chars(subindex, loutput, ABCDEFG, _ABCDEFG);
+            *(++loutput) = subindex;
+            consume_chars(subindex, root, loutput, ABCDEFG, _ABCDEFG);
         }
     }
 }
@@ -1625,21 +1641,22 @@ generateAnagramSimd(const char* name)
     std::cout << "analising " << name << std::endl;
 #endif
     unsigned int total = palavras.size();
-    for (unsigned int i = 0; i < total; i++) {
-        __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[i]);
-        __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[i]);
+    int output[MAX_ANAGRAMS];
+    for (unsigned int index = 0; index < total; index++) {
+        __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[index]);
+        __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[index]);
         __m256i mor = _mm256_or_si256(meq, mgt);
 #ifdef SHOW_DEBUG
         print_chars("meq ", meq);
         print_chars("mgt ", mgt);
         print_chars("mor ", mor);
-        std::cout << palavras[i] << " " << _mm256_movemask_epi8(mor)
+        std::cout << palavras[index] << " " << _mm256_movemask_epi8(mor)
                   << std::endl;
 #endif
         if (_mm256_movemask_epi8(mor) == -1) {
-            std::string output;
-            output += palavras[i] + " ";
-            consume_chars_simd(i, output, bits, bitmap[i]);
+            output[0] = index;
+            consume_chars_simd(
+              index, (int*)&output, (int*)&output, bits, bitmap[index]);
         }
     }
 }
@@ -1654,14 +1671,15 @@ generateAnagram(const char* name)
 #endif
     bits = break_chars(name, ABCDEFG);
     unsigned int total = palavras.size();
-    for (unsigned int subindex = 0; subindex < total; subindex++) {
-        if ((bitmap[subindex] & bits) == bitmap[subindex]) {
+    int output[MAX_ANAGRAMS];
+    for (unsigned int index = 0; index < total; index++) {
+        if ((bitmap[index] & bits) == bitmap[index]) {
 #ifdef SHOW_DEBUG
-            std::cout << "1 match " << palavras[subindex] << std::endl;
-            std::bitset<26> bitset(bitmap[subindex]);
+            std::cout << "1 match " << palavras[index] << std::endl;
+            std::bitset<26> bitset(bitmap[index]);
             std::bitset<26> bitsetName(bits);
-            std::bitset<26> bitsetCalc(bitmap[subindex] & bits);
-            std::cout << "1  //" << palavras[subindex] << "\n";
+            std::bitset<26> bitsetCalc(bitmap[index] & bits);
+            std::cout << "1  //" << palavras[index] << "\n";
             std::cout << "1    " << bitset << std::endl;
             std::cout << "1  //" << name << "\n";
             std::cout << "1    " << bitsetName << std::endl;
@@ -1669,10 +1687,10 @@ generateAnagram(const char* name)
 #endif
             // consumes word
             int _ABCDEFG;
-            break_chars(palavras[subindex], _ABCDEFG);
-            std::string output;
-            output += palavras[subindex] + " ";
-            consume_chars(subindex, output, ABCDEFG, _ABCDEFG);
+            break_chars(palavras[index], _ABCDEFG);
+            output[0] = index;
+            consume_chars(
+              index, (int*)&output, (int*)&output, ABCDEFG, _ABCDEFG);
         }
     }
 }

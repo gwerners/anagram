@@ -123,6 +123,12 @@ time ./build/anagram ${DICTIONARY} gabrielwernersbachfarinas > ./build/gabrielwe
 count=$(wc -l ./build/gabrielwernersbachfarinas.txt)
 echo "total anagrams generated: ${count}"
 echo "_______________________________________________________________________________"
+#last test
+echo "anagram us_dictionary.txt gabrielfarinas"
+time ./build/anagram ./dict/us_dictionary.txt gabrielfarinas > ./build/big.txt
+count=$(wc -l ./build/big.txt)
+echo "total anagrams generated: ${count}"
+echo "_______________________________________________________________________________"
 
 ################################################################################
 #include 1 and 2 letter words
