@@ -30,11 +30,19 @@ main(int argc, const char** argv)
     if (argc > 1) {
         generateDictionaryBits(argv[1], argv[2]);
 #ifdef USE_SIMD
-        generateAnagramSimd(argv[2]);
-        freeBitmap();
 
+#ifdef USE_PARALLEL
+        generateAnagramSimdParallel(argv[2]);
+#else
+        generateAnagramSimd(argv[2]);
+#endif
+        freeBitmap();
+#else
+#ifdef USE_PARALLEL
+        generateAnagramParallel(argv[2]);
 #else
         generateAnagram(argv[2]);
+#endif
 #endif
     }
     return 0;

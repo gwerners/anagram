@@ -31,38 +31,48 @@ Some benchmarks:
 
 running simd version.
 
-**anagram_SIMD pt-Br_dictionary.txt gabrielfarinas**
+**anagram_SIMD ./dict/pt-Br_dictionary.txt gabrielfarinas**
 
-real	0m0,008s
+real	0m0,004s
+
 user	0m0,008s
-sys	0m0,000s
 
-total anagrams generated: **904** ./build/gabrielfarinas.txt
+sys	0m0,002s
+
+total anagrams generated: **904** ./build/gabrielfarinas_simd.txt
 _______________________________________________________________________________
-**anagram_SIMD pt-Br_dictionary.txt gabrielwernersbachfarinas**
 
-real	0m11,328s
-user	0m11,255s
-sys	0m0,072s
+**anagram_SIMD ./dict/pt-Br_dictionary.txt gabrielwernersbachfarinas**
+
+real	0m1,476s
+
+user	0m9,020s
+
+sys	0m0,316s
 
 total anagrams generated: **64984** ./build/gabrielwernersbachfarinas.txt
 _______________________________________________________________________________
+
 running cpp version.
 
-**anagram pt-Br_dictionary.txt gabrielfarinas**
+**anagram ./dict/pt-Br_dictionary.txt gabrielfarinas**
 
-real	0m0,016s
-user	0m0,016s
+real	0m0,006s
+
+user	0m0,023s
+
 sys	0m0,000s
 
 total anagrams generated: **904** ./build/gabrielfarinas.txt
 _______________________________________________________________________________
-**anagram pt-Br_dictionary.txt gabrielwernersbachfarinas**
 
-real	0m33,144s
-user	0m33,062s
-sys	0m0,080s
+**anagram ./dict/pt-Br_dictionary.txt gabrielwernersbachfarinas**
 
+real	0m6,479s
+
+user	0m41,376s
+
+sys	0m1,308s
 
 total anagrams generated: **64984** ./build/gabrielwernersbachfarinas.txt
 _______________________________________________________________________________
@@ -74,9 +84,11 @@ running cpp version.
 
 **anagram minimal.txt tommarvoloriddle**
 
-real	0m0,001s
-user	0m0,001s
-sys	0m0,000s
+real	0m0,002s
+
+user	0m0,000s
+
+sys	0m0,004s
 
 famous anagram(words are sorted):
 
@@ -86,11 +98,15 @@ famous anagram(words are sorted):
 I also did a benchmark using the dictionary us_dictionary.txt with 142.810 words:
 (this dictionary was generated using words from a free online dictionary and running the script makeUsDict.bash to fix the letters and remove invalid words)
 
+
 **anagram_SIMD us_dictionary.txt gabrielfarinas**
 
-real	0m24,007s
-user	0m20,869s
-sys	0m3,136s
-total anagrams generated: 2675981 ./build/big.txt
+real	0m3,202s
 
-total anagrams generated: **2675981** ./gabrielfarinas.txt
+user	0m22,314s
+
+sys	0m0,694s
+
+total anagrams generated: **2675981** ./build/big.txt
+_______________________________________________________________________________
+

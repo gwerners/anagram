@@ -20,6 +20,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "anagram.h"
+#ifdef USE_PARALLEL
+#include "taskflow/taskflow.hpp"
+#endif
+
 std::vector<std::string> palavras;
 std::vector<unsigned int> bitmap;
 enum CharBits
@@ -354,7 +358,8 @@ consume_chars(unsigned int index,
         o == 0 && p == 0 && q == 0 && r == 0 && s == 0 && t == 0 && u == 0 &&
         v == 0 && w == 0 && x == 0 && y == 0 && z == 0) {
         // found anagram!
-        std::cout << output << std::endl;
+        // std::cout << output << std::endl;
+        fprintf(stdout, "%s\n", output.c_str());
         return;
     }
     // creates new mask to compare
@@ -413,11 +418,64 @@ consume_chars(unsigned int index,
         }
     }
 }
+#ifdef USE_PARALLEL
+void
+runner(const char* name,
+       unsigned int total,
+       unsigned int start,
+       unsigned int step)
+{
+    unsigned int bits;
+    int ABCDEFG;
+    bits = break_chars(name, ABCDEFG);
+    std::string output;
+    for (unsigned int index = start; index < total; index += step) {
+        if ((bitmap[index] & bits) == bitmap[index]) {
+#ifdef SHOW_DEBUG
+            std::cout << "1 match " << palavras[index] << std::endl;
+            std::bitset<26> bitset(bitmap[index]);
+            std::bitset<26> bitsetName(bits);
+            std::bitset<26> bitsetCalc(bitmap[index] & bits);
+            std::cout << "1  //" << palavras[index] << "\n";
+            std::cout << "1    " << bitset << std::endl;
+            std::cout << "1  //" << name << "\n";
+            std::cout << "1    " << bitsetName << std::endl;
+            std::cout << "1    " << bitsetCalc << std::endl;
+#endif
+            // consumes word
+            int _ABCDEFG;
+            auto lastSize = output.size();
+            break_chars(palavras[index], _ABCDEFG);
+            output = palavras[index];
+            output.push_back(' ');
+            consume_chars(index, output, ABCDEFG, _ABCDEFG);
+            output.resize(lastSize);
+        }
+    }
+}
+void
+generateAnagramParallel(const char* name)
+{
 
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-
+#ifdef SHOW_DEBUG
+    std::cout << "analising " << name << std::endl;
+#endif
+    unsigned int total = palavras.size();
+    tf::Executor executor;
+    tf::Taskflow taskflow;
+    // 8 cpus
+    unsigned int step = 8;
+    taskflow.emplace([&]() { runner(name, total, 0, step); }).name("A1");
+    taskflow.emplace([&]() { runner(name, total, 1, step); }).name("A2");
+    taskflow.emplace([&]() { runner(name, total, 2, step); }).name("A3");
+    taskflow.emplace([&]() { runner(name, total, 3, step); }).name("A4");
+    taskflow.emplace([&]() { runner(name, total, 4, step); }).name("A5");
+    taskflow.emplace([&]() { runner(name, total, 5, step); }).name("A6");
+    taskflow.emplace([&]() { runner(name, total, 6, step); }).name("A7");
+    taskflow.emplace([&]() { runner(name, total, 7, step); }).name("A8");
+    executor.run(taskflow).wait();
+}
+#else
 void
 generateAnagram(const char* name)
 {
@@ -453,6 +511,7 @@ generateAnagram(const char* name)
         }
     }
 }
+#endif
 void
 generateDictionaryBits(const char* filename, const char* targetString)
 {

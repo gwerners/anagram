@@ -86,7 +86,9 @@ export IGNORE_LESS=1
 
 #use AVX
 export ENABLE_SIMD=1
-export CXXFLAGS="-O2 -Wall -std=c++11 -mavx2"
+
+#export CXXFLAGS="-I. -O2 -Wall -std=c++11 -mavx2"
+export CXXFLAGS="-I. -I$(pwd)/cpp-taskflow -O3 -Wall -std=c++17 -mavx2 -pthread"
 
 #build!
 BuildProgram $BUILD_TYPE
@@ -128,7 +130,7 @@ echo "__________________________________________________________________________
 ################################################################################
 #use non simd version:
 unset ENABLE_SIMD
-unset CXXFLAGS
+export CXXFLAGS="-I. -I$(pwd)/cpp-taskflow -O3 -Wall -std=c++17 -pthread"
 
 #build!
 BuildProgram $BUILD_TYPE

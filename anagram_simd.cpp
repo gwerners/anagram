@@ -20,10 +20,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "anagram.h"
+#include <unistd.h>
+
 std::vector<std::string> palavras;
 std::list<std::string> listaPalavras;
 __m256i* bitmap = nullptr;
 
+#ifdef USE_PARALLEL
+#include "taskflow/taskflow.hpp"
+#endif
 void
 print_chars(const char* name, __m256i ma)
 {
@@ -1088,7 +1093,8 @@ consume_chars(unsigned int index,
     __m256i meq = _mm256_cmpeq_epi8(bits, zero);
     if (_mm256_movemask_epi8(meq) == -1) {
         // found anagram!
-        std::cout << output << std::endl;
+        // std::cout << output << std::endl;
+        fprintf(stdout, "%s\n", output.c_str());
         return;
     }
     // seek more words
@@ -1145,7 +1151,55 @@ generateAnagramSimd(const char* name)
         }
     }
 }
+#ifdef USE_PARALLEL
+void
+runner(__m256i bits, unsigned int total, unsigned int start, unsigned int step)
+{
+    std::string output;
+    for (unsigned int index = start; index < total; index += step) {
+        __m256i meq = _mm256_cmpeq_epi8(bits, bitmap[index]);
+        __m256i mgt = _mm256_cmpgt_epi8(bits, bitmap[index]);
+        __m256i mor = _mm256_or_si256(meq, mgt);
+#ifdef SHOW_DEBUG
+        print_chars("meq ", meq);
+        print_chars("mgt ", mgt);
+        print_chars("mor ", mor);
+        std::cout << palavras[index] << " " << _mm256_movemask_epi8(mor)
+                  << std::endl;
+#endif
+        if (_mm256_movemask_epi8(mor) == -1) {
+            auto lastSize = output.size();
+            output = palavras[index];
+            output.push_back(' ');
+            consume_chars(index, output, bits, bitmap[index]);
+            output.resize(lastSize);
+        }
+    }
+}
+void
+generateAnagramSimdParallel(const char* name)
+{
+    __m256i bits = break_chars(name);
+#ifdef SHOW_DEBUG
+    std::cout << "analising " << name << std::endl;
+#endif
+    unsigned int total = palavras.size();
 
+    tf::Executor executor;
+    tf::Taskflow taskflow;
+    // 8 cpus
+    unsigned int step = 8;
+    taskflow.emplace([&]() { runner(bits, total, 0, step); }).name("A1");
+    taskflow.emplace([&]() { runner(bits, total, 1, step); }).name("A2");
+    taskflow.emplace([&]() { runner(bits, total, 2, step); }).name("A3");
+    taskflow.emplace([&]() { runner(bits, total, 3, step); }).name("A4");
+    taskflow.emplace([&]() { runner(bits, total, 4, step); }).name("A5");
+    taskflow.emplace([&]() { runner(bits, total, 5, step); }).name("A6");
+    taskflow.emplace([&]() { runner(bits, total, 6, step); }).name("A7");
+    taskflow.emplace([&]() { runner(bits, total, 7, step); }).name("A8");
+    executor.run(taskflow).wait();
+}
+#endif
 void
 generateDictionaryBits(const char* filename, const char* targetString)
 {

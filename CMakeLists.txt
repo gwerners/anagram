@@ -1,18 +1,16 @@
 cmake_minimum_required(VERSION 3.10.2)
 
+#set( CMAKE_VERBOSE_MAKEFILE on )
 
 if(DEFINED ENV{ENABLE_SIMD})
   add_definitions(-DUSE_SIMD)
-  message("cmake ignoring flags CMAKE_CXX_FLAGS and CMAKE_CXX_FLAGS_RELEASE...")
-  message("the environment variable will be ignored if the CMAKE_CXX_FLAGS variable is defined.")
-  message("but if I didn't set CXXFLAGS in the environment, CMAKE_CXX_FLAGS will be empty! ")
-  set(CMAKE_CXX_FLAGS "-I. -O2 -Wall -std=c++11 -mavx2")
-  set(CMAKE_CXX_FLAGS_RELEASE "-I. -O2 -Wall -std=c++11 -mavx2")
-  message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
-  message("CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")
-else()
-  set(CMAKE_CXX_FLAGS_RELEASE "-I. -O2 -Wall -std=c++11")
 endif()
+
+set(CMAKE_CXX_FLAGS $ENV{CXXFLAGS})
+set(CMAKE_CXX_FLAGS_RELEASE $ENV{CXXFLAGS})
+message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
+message("CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")
+message("CXXFLAGS $ENV{CXXFLAGS}")
 
 if(DEFINED ENV{IGNORE_LESS})
   #add_compile_definitions(IGNORE_WORDS_WITH_LESS_LETTERS)

@@ -43,6 +43,7 @@
 
 //#define SHOW_DEBUG
 //#define IGNORE_WORDS_WITH_LESS_LETTERS
+#define USE_PARALLEL
 
 // guess about max anagrams per line
 // const int MAX_ANAGRAMS = 20;
@@ -57,11 +58,17 @@ consume_chars(unsigned int index,
               std::string& output,
               __m256i original,
               __m256i consume);
+
+#ifdef USE_PARALLEL
+void
+generateAnagramSimdParallel(const char* name);
+#else  // USE_PARALLEL
 void
 generateAnagramSimd(const char* name);
+#endif // USE_PARALLEL
 void
 freeBitmap();
-#else
+#else // USE_SIMD
 unsigned int
 break_chars(const std::string& name, ABCDEFG_DEC_REF);
 bool
@@ -71,11 +78,16 @@ consume_chars(unsigned int index,
               std::string& output,
               ABCDEFG_DEC,
               _ABCDEFG_DEC);
+#ifdef USE_PARALLEL
+void
+generateAnagramParallel(const char* name);
+#else  // USE_PARALLEL
 void
 generateAnagram(const char* name);
-#endif
+#endif // USE_PARALLEL
+#endif // USE_SIMD
 
 void
 generateDictionaryBits(const char* filename, const char* targetString);
 
-#endif
+#endif //__ANAGRAM__
