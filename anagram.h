@@ -20,22 +20,62 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
+#ifndef __ANAGRAM__
+#define __ANAGRAM__
 
-#include "anagram.h"
-
-int
-main(int argc, const char** argv)
-{
-    if (argc > 1) {
-        generateDictionaryBits(argv[1], argv[2]);
 #ifdef USE_SIMD
-        generateAnagramSimd(argv[2]);
-        freeBitmap();
-
+#include <emmintrin.h>
+#include <immintrin.h>
+#include <tmmintrin.h>
+#include <xmmintrin.h>
 #else
-        generateAnagram(argv[2]);
+#include "macros.h"
 #endif
-    }
-    return 0;
-}
+
+#include <bitset>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <stdio.h>
+#include <string.h>
+#include <string>
+#include <vector>
+
+//#define SHOW_DEBUG
+//#define IGNORE_WORDS_WITH_LESS_LETTERS
+
+// guess about max anagrams per line
+// const int MAX_ANAGRAMS = 20;
+
+#ifdef USE_SIMD
+void
+print_chars(const char* name, __m256i ma);
+__m256i
+break_chars(const std::string& name);
+void
+consume_chars(unsigned int index,
+              std::string& output,
+              __m256i original,
+              __m256i consume);
+void
+generateAnagramSimd(const char* name);
+void
+freeBitmap();
+#else
+unsigned int
+break_chars(const std::string& name, ABCDEFG_DEC_REF);
+bool
+insertBits(const char* word, int targetBits);
+void
+consume_chars(unsigned int index,
+              std::string& output,
+              ABCDEFG_DEC,
+              _ABCDEFG_DEC);
+void
+generateAnagram(const char* name);
+#endif
+
+void
+generateDictionaryBits(const char* filename, const char* targetString);
+
+#endif

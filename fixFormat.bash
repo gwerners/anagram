@@ -23,7 +23,7 @@ function formatCode {
   set +euo pipefail
   DIFF_COUNT=0
   CLANG_FORMAT_CMD=clang-format-6.0
-  FILES=$(find . -path ./build -prune -o -path ./old -prune -o -iname "*.c" -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.hpp" -o -iname "*.cc" -o -iname "*.hh" -o -iname "*.c++" -o -iname "*.h++" -iname "*.cxx" -o -iname "*.hxx")
+  FILES=$(find . -path ./build -prune -o -path ./old -prune -o -path ./cpp-taskflow -prune -o -iname "*.c" -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.hpp" -o -iname "*.cc" -o -iname "*.hh" -o -iname "*.c++" -o -iname "*.h++" -iname "*.cxx" -o -iname "*.hxx")
 
   for f in ${FILES}
   do

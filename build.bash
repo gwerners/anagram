@@ -40,6 +40,16 @@ function UnTarDict {
     tar -xzf dict.tar.gz
   fi
 }
+function GetCppTaskFlow {
+  if [ ! -d "cpp-taskflow" ]; then
+    if [ ! -f "cpp-taskflow.tar.gz" ]; then
+      git clone https://github.com/cpp-taskflow/cpp-taskflow.git
+      tar -cf cpp-taskflow.tar.gz cpp-taskflow
+    else
+      tar -xf cpp-taskflow.tar.gz
+    fi
+  fi
+}
 function BuildProgram {
   if [ ! -d "build" ]; then
     MKDIR build
@@ -64,6 +74,9 @@ CheckNeeded cmake || exit 1
 CheckNeeded g++ || exit 1
 
 UnTarDict
+
+#https://github.com/cpp-taskflow/cpp-taskflow
+GetCppTaskFlow
 
 #set build variables
 BUILD_TYPE=Release
